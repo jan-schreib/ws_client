@@ -22,6 +22,7 @@ defmodule WsClientTest do
         assert(data == "hi\n")
     end
 
+    assert(WsClient.connect(TestWorker, url) == {:error, "Already connected"})
     WsClient.disconnect(TestWorker)
   end
 end

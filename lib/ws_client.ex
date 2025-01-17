@@ -14,9 +14,26 @@ defmodule WsClient do
       iex> WsClient.send(DocuClient, "hello world\\n")
       :ok
   """
-
   def send(worker, command) do
     Worker.send(worker, command)
+  end
+
+  @doc """
+  Starts `websocat` and connect to the given url.
+
+  Returns `:ok` or `{:error, "Already connected"}`.
+
+  ## Examples
+
+      iex> WsClient.connect(DocuClient, "wss://echo.websocket.org")
+      {:error, "Already connected"}
+      iex> WsClient.disconnect(DocuClient)
+      :ok
+      iex> WsClient.connect(DocuClient, "wss://echo.websocket.org")
+      :ok
+  """
+  def connect(worker, url) do
+    Worker.connect(worker, url)
   end
 
   @doc """

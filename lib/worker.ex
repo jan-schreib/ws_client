@@ -20,12 +20,16 @@ defmodule WsClient.Worker do
     GenServer.call(pid, :disconnect)
   end
 
+  def connect(pid, url) do
+    GenServer.call(pid, {:connect, url})
+  end
+
   def callback(pid, cb) do
     GenServer.call(pid, {:cb, cb})
   end
 
-  defp start_client(args) do
-    port = Core.start_client(args.url)
+  defp start_client(%{url: url} = args) do
+    port = Core.start_client(url)
     ref = Core.monitor(port)
     Map.merge(args, %{port: port, port_ref: ref})
   end
@@ -41,6 +45,18 @@ defmodule WsClient.Worker do
   def handle_call({:cb, new_cb}, _from, state) do
     new_state = Map.replace(state, :cb, new_cb)
     {:reply, :ok, new_state}
+  end
+
+  @impl true
+  def handle_call({:connect, url}, _from, state) do
+    case Map.has_key?(state, :port) || Map.has_key?(state, :port_ref) do
+      true ->
+        {:reply, {:error, "Already connected"}, state}
+
+      _ ->
+        new_state = Map.merge(state, %{url: url}) |> start_client
+        {:reply, :ok, new_state}
+    end
   end
 
   @impl true
@@ -62,11 +78,6 @@ defmodule WsClient.Worker do
 
     new_state = Map.replace(state, :commands, [command] ++ state.commands)
     {:noreply, new_state}
-  end
-
-  @impl true
-  def handle_cast(:disconnect, state) do
-    {:noreply, state}
   end
 
   @impl true
