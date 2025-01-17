@@ -17,17 +17,17 @@ defmodule WsClient.Worker do
   end
 
   def disconnect(pid) do
-    GenServer.cast(pid, :disconnect)
+    GenServer.call(pid, :disconnect)
   end
 
   def callback(pid, cb) do
-    GenServer.cast(pid, {:cb, cb})
+    GenServer.call(pid, {:cb, cb})
   end
 
   defp start_client(args) do
     port = Core.start_client(args.url)
-    Port.monitor(port)
-    Map.merge(args, %{port: port})
+    ref = Core.monitor(port)
+    Map.merge(args, %{port: port, port_ref: ref})
   end
 
   @impl true
@@ -35,6 +35,25 @@ defmodule WsClient.Worker do
     args = start_client(args)
 
     {:ok, args}
+  end
+
+  @impl true
+  def handle_call({:cb, new_cb}, _from, state) do
+    new_state = Map.replace(state, :cb, new_cb)
+    {:reply, :ok, new_state}
+  end
+
+  @impl true
+  def handle_call(:disconnect, _from, %{port: port, port_ref: port_ref} = state) do
+    Core.demonitor(port_ref)
+    Core.quit_client(port)
+
+    state =
+      state
+      |> Map.delete(:port)
+      |> Map.delete(:port_ref)
+
+    {:reply, :ok, state}
   end
 
   @impl true
@@ -46,14 +65,8 @@ defmodule WsClient.Worker do
   end
 
   @impl true
-  def handle_cast({:cb, new_cb}, state) do
-    new_state = Map.replace(state, :cb, new_cb)
-    {:noreply, new_state}
-  end
-
-  @impl true
   def handle_cast(:disconnect, state) do
-    Core.quit_client(state.port)
+    {:noreply, state}
   end
 
   @impl true

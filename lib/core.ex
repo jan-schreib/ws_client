@@ -10,9 +10,9 @@ defmodule WsClient.Core do
     )
   end
 
-  def quit_client(port) do
-    Port.close(port)
-  end
+  def monitor(port), do: Port.monitor(port)
+  def demonitor(port), do: Port.demonitor(port)
+  def quit_client(port), do: Port.close(port)
 
   def send(client, command) when is_binary(command) do
     Port.command(client, command)

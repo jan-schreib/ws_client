@@ -1,7 +1,6 @@
 defmodule WsClientTest do
   use ExUnit.Case
   alias WsClient.Worker
-  doctest WsClient
 
   test "echo server connection" do
     pid = self()
