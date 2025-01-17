@@ -5,7 +5,7 @@ defmodule WsClient do
   Send a message to the connected web server via the client.
   The server's respose will call the provided callback function.
 
-  Make sure to include a newline '\n' character to submit the request.
+  Make sure to include a newline '\\n' character to submit the request.
 
   Returns `:ok`.
 
