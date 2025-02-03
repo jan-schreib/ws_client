@@ -2,8 +2,8 @@ defmodule WsClient do
   alias WsClient.Worker
 
   @doc """
-  Send a message to the connected web server via the client.
-  The server's respose will call the provided callback function.
+  Sends a message to the connected web server via the client.
+  The server's response data will be used in the provided callback function.
 
   Make sure to include a newline '\\n' character to submit the request.
 
@@ -19,7 +19,7 @@ defmodule WsClient do
   end
 
   @doc """
-  Starts `websocat` and connect to the given url.
+  Starts `websocat` and connect to the given URL.
 
   Returns `:ok` or `{:error, "Already connected"}`.
 
@@ -54,6 +54,21 @@ defmodule WsClient do
   received data from the connected web socket.
 
   ## Examples
+
+  You could use the Phoenix PubSub system to handle the data.
+
+
+      defp callback(json) do
+        with {:ok, data} <- JSON.decode(json |> to_string) do
+          Phoenix.PubSub.broadcast!(Jip.PubSub, "topic", data)
+        else
+          err -> IO.inspect(err)
+        end
+      end
+
+      WsClient.callback(DocuClient, cb)
+
+  It is also possible to change the callback at runtime.
 
       iex> cb = fn data -> data |> IO.inspect end
       #<Function<...>
