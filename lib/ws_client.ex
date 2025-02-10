@@ -1,6 +1,15 @@
 defmodule WsClient do
   alias WsClient.Worker
 
+  @moduledoc """
+  WsClient
+  A web socket client that uses websocat via a Port.
+  In case of a crash of websocat it will be restarted
+  and submit the same commands as before to get back
+  to the state before the crash.
+
+  """
+
   @doc """
   Sends a message to the connected web server via the client.
   The server's response data will be used in the provided callback function.
@@ -58,7 +67,7 @@ defmodule WsClient do
   You could use the Phoenix PubSub system to handle the data.
 
 
-      defp callback(json) do
+      defp cb(json) do
         with {:ok, data} <- JSON.decode(json |> to_string) do
           Phoenix.PubSub.broadcast!(Jip.PubSub, "topic", data)
         else
