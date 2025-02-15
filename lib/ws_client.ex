@@ -23,7 +23,7 @@ defmodule WsClient do
       iex> WsClient.send(DocuClient, "hello world\\n")
       :ok
   """
-  def send(worker, command) do
+  def send(worker, command) when is_binary(command) do
     Worker.send(worker, command)
   end
 
@@ -41,7 +41,7 @@ defmodule WsClient do
       iex> WsClient.connect(DocuClient, "wss://echo.websocket.org")
       :ok
   """
-  def connect(worker, url) do
+  def connect(worker, url) when is_binary(url) do
     Worker.connect(worker, url)
   end
 
@@ -69,7 +69,7 @@ defmodule WsClient do
 
       defp cb(json) do
         with {:ok, data} <- JSON.decode(json |> to_string) do
-          Phoenix.PubSub.broadcast!(Jip.PubSub, "topic", data)
+          Phoenix.PubSub.broadcast!(Project.PubSub, "topic", data)
         else
           err -> IO.inspect(err)
         end
@@ -84,7 +84,7 @@ defmodule WsClient do
       iex> WsClient.callback(DocuClient, cb)
       :ok
   """
-  def callback(worker, cb) do
+  def callback(worker, cb) when is_function(cb) do
     Worker.callback(worker, cb)
   end
 end
